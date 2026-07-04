@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบคำนวณเบี้ยประกันภัยอัจฉริยะ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #e54b4b; /* สีแดงอ่อน/คอรัลหลัก */
+            --primary-hover: #c93b3b;
+            --bg-color: #fff5f5; /* พื้นหลังสีแดงอ่อนมากๆ */
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --border-color: #fee2e2;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Sarabun', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: var(--card-bg);
+            max-width: 550px;
+            width: 100%;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(229, 75, 75, 0.08);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--text-main);
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 15px;
+            color: var(--text-main);
+            background-color: #fffafb;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        select:focus, input[type="number"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(229, 75, 75, 0.1);
+            background-color: #ffffff;
+        }
+
+        /* ตกแต่งส่วนที่เป็น Checkbox (Rider) */
+        .rider-group {
+            background: #fffafb;
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: 14px;
+            margin-top: 10px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            font-weight: 400;
+            cursor: pointer;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .checkbox-label:last-child {
+            margin-bottom: 0;
+        }
+
+        .checkbox-label input {
+            accent-color: var(--primary-color);
+            width: 18px;
+            height: 18px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(229, 75, 75, 0.2);
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(229, 75, 75, 0.3);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        /* ส่วนแสดงผลลัพธ์ */
+        #result {
+            margin-top: 30px;
+            padding: 24px;
+            border-radius: 16px;
+            background: #fff5f5;
+            border: 1px solid #fecaca;
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 14px;
+            border-bottom: 1px solid #fecaca;
+            padding-bottom: 8px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--text-main);
+        }
+
+        .result-total {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 2px dashed #fecaca;
+            font-size: 18px;
+            font-weight: 700;
+            color: #b91c1c;
+        }
+
+        .decline-message {
+            color: #b91c1c;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>คำนวณเบี้ยประกันภัย</h1>
+        <p>กรอกข้อมูลเพื่อประเมินราคาเบี้ยประกันสุขภาพและชีวิตของคุณ</p>
+    </header>
+    
+    <div class="form-group">
+        <label for="plan">แผนความคุ้มครอง & ประเภทห้อง</label>
+        <select id="plan">
+            <option value="10000">Standard (ห้องรวม / วงเงิน 5 แสนบาท)</option>
+            <option value="25000">Gold (ห้องเดี่ยว / วงเงิน 2 ล้านบาท)</option>
+            <option value="50000">Platinum (ห้องเดี่ยวพิเศษ / วงเงิน 5 ล้านบาท)</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="age">อายุ (ปี)</label>
+        <input type="number" id="age" value="30" min="0" max="100">
+    </div>
+
+    <div class="form-group">
+        <label for="gender">เพศ</label>
+        <select id="gender">
+            <option value="M">ชาย</option>
+            <option value="F">หญิง</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="job">กลุ่มอาชีพและความเสี่ยง</label>
+        <select id="job">
+            <option value="1.0">เสี่ยงต่ำ (งานออฟฟิศ / ค้าขายทั่วไป)</option>
+            <option value="1.2">เสี่ยงปานกลาง (วิศวกรสนาม / ขับรถสาธารณะ)</option>
+            <option value="1.5">เสี่ยงสูง (งานก่อสร้าง / กู้ภัย / แท่นขุดเจาะ)</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="disease">โรคประจำตัวร้ายแรง</label>
+        <select id="disease">
+            <option value="none">ไม่มีโรคประจำตัวร้ายแรง</option>
+            <option value="loading">มีโรคประจำตัวระดับทั่วไป (เพิ่มเบี้ย 30%)</option>
+            <option value="decline">มีโรคร้ายแรงขั้นรุนแรงมาก (ไม่รับประกัน)</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="claim">ประวัติการเคลมในปีที่ผ่านมา</label>
+        <select id="claim">
+            <option value="0">ปกติ / เคลมน้อยมาก</option>
+            <option value="0.15">มีประวัติเคลมบ่อยหรือยอดสูง (เพิ่มเบี้ย 15%)</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>ความคุ้มครองเพิ่มเติม (Rider)</label>
+        <div class="rider-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="rider_cancer" value="2500"> สัญญาเพิ่มเติมโรคมะเร็ง (+2,500 บาท)
+            </label>
+            <label class="checkbox-label">
+                <input type="checkbox" id="rider_accident" value="1500"> สัญญาเพิ่มเติมอุบัติเหตุ (+1,500 บาท)
+            </label>
+        </div>
+    </div>
+
+    <button onclick="calculatePremium()">คำนวณเบี้ยประกันสุทธิ</button>
+
+    <div id="result"></div>
+</div>
+
+<script>
+function calculatePremium() {
+    let basePremium = parseFloat(document.getElementById('plan').value);
+    let age = parseInt(document.getElementById('age').value);
+    let gender = document.getElementById('gender').value;
+    let jobFactor = parseFloat(document.getElementById('job').value);
+    let diseaseStatus = document.getElementById('disease').value;
+    let claimFactor = parseFloat(document.getElementById('claim').value);
+    
+    let resultDiv = document.getElementById('result');
+    resultDiv.style.display = 'block';
+
+    // 1. เงื่อนไขปฏิเสธการรับประกันภัยทันที
+    if (diseaseStatus === 'decline') {
+        resultDiv.innerHTML = `<div class="decline-message">🚨 ขออภัยด้วยค่ะ ทางบริษัทไม่สามารถรับประกันภัยได้<br>เนื่องจากข้อจำกัดด้านโรคประจำตัวร้ายแรงขั้นรุนแรง</div>`;
+        return;
+    }
+
+    // 2. คำนวณตัวคูณอายุ
+    let ageFactor = 1.0;
+    if (age < 20) ageFactor = 0.8;
+    else if (age <= 40) ageFactor = 1.0;
+    else if (age <= 60) ageFactor = 1.5;
+    else ageFactor = 2.5;
+
+    // 3. คำนวณตัวคูณเพศ
+    let genderFactor = 1.0;
+    if (gender === 'M' && age > 50) genderFactor = 1.1;
+    else if (gender === 'F' && age <= 35) genderFactor = 1.05;
+
+    // 4. คำนวณตัวคูณสุขภาพ
+    let healthFactor = 1.0;
+    if (diseaseStatus === 'loading') healthFactor += 0.30;
+    healthFactor += claimFactor;
+
+    // 5. คำนวณค่าสัญญาเพิ่มเติม (Rider)
+    let riderPremium = 0;
+    if (document.getElementById('rider_cancer').checked) riderPremium += 2500;
+    if (document.getElementById('rider_accident').checked) riderPremium += 1500;
+
+    // 6. สรุปสูตรคำนวณเบี้ยสุทธิ
+    let mainPremium = basePremium * ageFactor * genderFactor * jobFactor * healthFactor;
+    let totalPremium = mainPremium + riderPremium;
+
+    // 7. พ่นผลลัพธ์ลงหน้าจอ UI ดีไซน์ใหม่
+    resultDiv.innerHTML = `
+        <div class="result-title">สรุปผลการประเมินเบี้ย</div>
+        <div class="result-item">
+            <span>เบี้ยประกันภัยหลัก (ตามความเสี่ยง):</span>
+            <strong>${mainPremium.toLocaleString('th-TH', {maximumFractionDigits:2})} บาท</strong>
+        </div>
+        <div class="result-item">
+            <span>ค่าสัญญาเพิ่มเติม (Rider):</span>
+            <strong>${riderPremium.toLocaleString('th-TH')} บาท</strong>
+        </div>
+        <div class="result-total">
+            <span>รวมเบี้ยประกันสุทธิต่อปี:</span>
+            <span>${totalPremium.toLocaleString('th-TH', {maximumFractionDigits:2})} บาท</span>
+        </div>
+    `;
+}
+</script>
+</body>
+</html>
